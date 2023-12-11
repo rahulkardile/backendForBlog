@@ -40,13 +40,7 @@ try {
 }
 
 app.get("/", (req, res) => {
-  res.send("Okk We Are Now Live");
-  
-})
-
-app.get("/all", async (req, res) => {
-  const data = await User.find();
-  res.json(data)
+  res.send("Okk We Are Live");
 })
 
 app.post("/register", async (req, res) => {
@@ -64,7 +58,6 @@ app.post("/register", async (req, res) => {
     res.status(200).json(newUser);
   } catch (error) {
     res.status(500).json(error);
-    console.log(error);
   }
 
 })
@@ -72,76 +65,102 @@ app.post("/register", async (req, res) => {
 app.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
-  const userDoc = await User.findOne({ username });
-  if (!userDoc) return res.status(404).json("User not Found! Please login");
+  try {
+    const userDoc = await User.findOne({ username });
+    if (!userDoc) return res.status(404).json("User not Found! Please login");
 
-  const passOk = await bcrypt.compareSync(password, userDoc.password);
-  if (!passOk) {
-    res.status(404).json("Invalid password");
-  } else {
-    // login 
-    Jwt.sign(JSON.stringify({ username, id: userDoc._id }), secret, {}, (err, token) => {
-      if (err) throw err;
+    const passOk = await bcrypt.compareSync(password, userDoc.password);
+    if (!passOk) {
+      res.status(404).json("Invalid password");
+    } else {
+      // login 
+      Jwt.sign(JSON.stringify({ username, id: userDoc._id }), secret, {}, (err, token) => {
+        if (err) throw err;
 
-      res.cookie('token', token).json({ id: userDoc._id, username }).status(200)
+        res.cookie('token', token).json({ id: userDoc._id, username }).status(200)
 
-    })
+      })
+    }
+  } catch (error) {
+    res.status(400).json(error)
   }
+
+
 })
 
 app.get("/profile", (req, res) => {
   const { token } = req.cookies;
+  try {
+    Jwt.verify(token, secret, {}, (err, info) => {
+      if (err) throw err;
+      res.json(info);
+    })
+  } catch (error) {
+    res.status(200).json("Your is not Loged in")
+  }
 
-  Jwt.verify(token, secret, {}, (err, info) => {
-    if (err) throw err;
-    res.json(info);
-  })
 })
 
 app.post('/logout', (req, res) => {
-  res.cookie('token', '').json('ok logout');
+  try {
+    res.cookie('token', '').json('ok logout');
+  } catch (error) {
+    res.status(400).json(error);
+  }
 })
 
 app.post("/createpost", upload.single('file'), async (req, res) => {
 
-  const { originalname, path } = req.file
-  const newPath = path + "_" + originalname
-  fs.renameSync(path, newPath);
+  try {
+    const { originalname, path } = req.file
+    const newPath = path + "_" + originalname
+    fs.renameSync(path, newPath);
 
-  const { title, summary, content } = req.body;
-  const { token } = req.cookies;
+    const { title, summary, content } = req.body;
+    const { token } = req.cookies;
 
-  Jwt.verify(token, secret, {}, (err, info) => {
-    if (err) throw err
+    Jwt.verify(token, secret, {}, (err, info) => {
+      if (err) throw err
 
-    try {
-      const postDoc = Post.create({
-        title: title,
-        summary: summary,
-        content: content,
-        cover: newPath,
-        username: info.username,
-        author: info.id
-      })
+      try {
+        const postDoc = Post.create({
+          title: title,
+          summary: summary,
+          content: content,
+          cover: newPath,
+          username: info.username,
+          author: info.id
+        })
 
-      res.status(200).json(postDoc)
+        res.status(200).json(postDoc)
 
-    } catch (error) {
-      res.status(400).json("Error Found " + error)
-    }
+      } catch (error) {
+        res.status(400).json("Error Found " + error)
+      }
 
-  })
+    })
+
+  } catch (error) {
+    res.status(400).json(error)
+  }
+
 })
 
 
 app.get("/allposts", async (req, res) => {
 
-  const Data = await Post.find()
-    .populate('author', ['username'])
-    .sort({ createdAt: -1 })
-    .limit(20);
+  try {
 
-  res.json(Data);
+    const Data = await Post.find()
+      .populate('author', ['username'])
+      .sort({ createdAt: -1 })
+      .limit(20);
+
+    res.json(Data);
+
+  } catch (error) {
+    res.status(400).json(error)
+  }
 })
 
 app.get('/post/:id', async (req, res) => {
@@ -164,7 +183,7 @@ app.put("/post", async (req, res) => {
       const postDoc = await Post.findById(id);
       const isAuthor = JSON.stringify(postDoc.author) === JSON.stringify(info.id)
 
-      if(!isAuthor){
+      if (!isAuthor) {
         res.status(400).json("You update the post!! Sorry your not author of this post")
       }
       await postDoc.updateOne({
