@@ -26,7 +26,7 @@ const __dirname = dirname(__filename);
 
 
 app.use(express.json());
-app.use(cors({ credentials: true, origin: 'https://quiet-kleicha-8cc62e.netlify.app' }));
+app.use(cors({ credentials: true, origin: 'https://quiet-kleicha-8cc62e.netlify.app' || "http://localhost:5173" }));
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'))
 
