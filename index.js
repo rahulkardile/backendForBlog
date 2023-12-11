@@ -26,7 +26,7 @@ const __dirname = dirname(__filename);
 
 
 app.use(express.json());
-app.use(cors({ credentials: true, origin: 'http://localhost:5173' }));
+app.use(cors({ credentials: true, origin: 'https://curious-arithmetic-c5fe8c.netlify.app/' }));
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'))
 
@@ -40,7 +40,8 @@ try {
 }
 
 app.get("/", (req, res) => {
-  res.send("Okk We Are Live");
+  res.send("Okk We Are Now Live");
+  
 })
 
 app.get("/all", async (req, res) => {
