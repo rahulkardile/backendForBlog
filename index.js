@@ -40,7 +40,7 @@ try {
 }
 
 app.get("/", (req, res) => {
-  res.send("Okk We Are Live");
+  res.send("Now You Are Dymnamic");
 })
 
 app.post("/register", async (req, res) => {
