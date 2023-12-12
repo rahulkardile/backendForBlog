@@ -17,16 +17,18 @@ const app = express();
 
 dotenv.config();
 const MONGO_URL = process.env.MONGODB
-const PORT = process.env.PORT
+const PORT = process.env.PORT || 3300
 
 const secret = 'jdsidw9e3913e8819i21kejw9';
 const upload = multer({ dest: 'uploads/' })
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const Origin = "http://localhost:5173"
+
 
 app.use(express.json());
-app.use(cors({ credentials: true, origin: "http://localhost:5173"  }));
+app.use(cors({ credentials: true, origin: Origin }));
 app.use(cookieParser());
 app.use('/uploads', express.static(__dirname + '/uploads'))
 
@@ -40,7 +42,7 @@ try {
 }
 
 app.get("/", (req, res) => {
-  res.send("Now You Are To Dymnamic");
+  res.send("Okk We Are Live");
 })
 
 app.post("/register", async (req, res) => {
